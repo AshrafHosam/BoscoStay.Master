@@ -1,0 +1,6 @@
+[submodule "services/BoscoStay.ApartmentsManagement"]
+	path = services/BoscoStay.ApartmentsManagement
+	url = https://github.com/AshrafHosam/BoscoStay.ApartmentsManagement
+[submodule "services/BookingServer"]
+	path = services/BookingServer
+	url = https://github.com/MeriemBchini/BookingServer
