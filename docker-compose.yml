@@ -11,7 +11,6 @@ services:
     volumes:
       - ./services/BookingServer:/app:delegated
       - /app/node_modules
-    depends_on: []
     healthcheck:
       test: ["CMD", "node", "-e", "require('fs').existsSync('./bookingServer.js') ? process.exit(0) : process.exit(1)"]
       interval: 10s
@@ -26,35 +25,31 @@ services:
         BUILD_CONFIGURATION: Release
     image: apartments-dotnet:local
     ports:
-      - "8080:8080"
+      - "8082:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     volumes:
       - ./services/BoscoStay.ApartmentsManagement:/src:delegated
-    depends_on: []
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 6
 
-  # java-service:
-  #   build:
-  #     context: ./services/JavaService
-  #     dockerfile: Dockerfile
-  #   image: java-service:local
-  #   ports:
-  #     - "8081:8080"
-  #   environment:
-  #     - SPRING_PROFILES_ACTIVE=local
-  #   volumes:
-  #     - ./services/JavaService:/app:delegated
-  #   depends_on: []
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 6
+  java-service:
+    build:
+      context: ./services/BoscoStay.SearchService
+      dockerfile: Dockerfile
+    image: java-service:local
+    ports:
+      - "8083:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=local
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
 networks:
   default:

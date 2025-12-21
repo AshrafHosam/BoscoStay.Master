@@ -4,3 +4,6 @@
 [submodule "services/BookingServer"]
 	path = services/BookingServer
 	url = https://github.com/MeriemBchini/BookingServer
+[submodule "services/service-java"]
+	path = services/service-java
+	url = https://github.com/kadambari25/BoscoStay.SearchService
