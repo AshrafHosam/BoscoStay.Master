@@ -7,3 +7,6 @@
 [submodule "services/service-java"]
 	path = services/service-java
 	url = https://github.com/kadambari25/BoscoStay.SearchService
+[submodule "services/BoscoStay.SearchService"]
+	path = services/BoscoStay.SearchService
+	url = https://github.com/kadambari25/BoscoStay.SearchService
