@@ -1,4 +1,37 @@
+version: "3.8"
+
 services:
+
+  # ---------------------------
+  # PostgreSQL for Search Service
+  # ---------------------------
+  search-postgres:
+    image: postgres:15
+    container_name: search-postgres
+    environment:
+      POSTGRES_USER: searchuser
+      POSTGRES_PASSWORD: searchpass
+      POSTGRES_DB: searchdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - search_postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  # ---------------------------
+  # RabbitMQ (Message Broker)
+  # ---------------------------
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: always
+
+  # ---------------------------
+  # Booking Service (Node.js)
+  # ---------------------------
   booking-node:
     build:
       context: ./services/BookingServer
@@ -11,12 +44,13 @@ services:
     volumes:
       - ./services/BookingServer:/app:delegated
       - /app/node_modules
-    healthcheck:
-      test: ["CMD", "node", "-e", "require('fs').existsSync('./bookingServer.js') ? process.exit(0) : process.exit(1)"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    depends_on:
+      - rabbitmq
+    restart: always
 
+  # ---------------------------
+  # Apartments Service (.NET)
+  # ---------------------------
   apartments-dotnet:
     build:
       context: ./services/BoscoStay.ApartmentsManagement
@@ -30,12 +64,11 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     volumes:
       - ./services/BoscoStay.ApartmentsManagement:/src:delegated
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 6
+    restart: always
 
+  # ---------------------------
+  # Search Service (Spring Boot)
+  # ---------------------------
   java-service:
     build:
       context: ./services/BoscoStay.SearchService
@@ -44,13 +77,21 @@ services:
     ports:
       - "8083:8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=local
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 6
+      - SPRING_PROFILES_ACTIVE=docker
+    # depends_on:
+    #   - search-postgres
+    #   - rabbitmq
+    restart: always
 
+# ---------------------------
+# Volumes
+# ---------------------------
+volumes:
+  search_postgres_data:
+
+# ---------------------------
+# Network
+# ---------------------------
 networks:
   default:
     name: master_local_network
