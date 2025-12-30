@@ -1,7 +1,6 @@
-version: "3.8"
+#version: "3.8"
 
 services:
-
   # ---------------------------
   # PostgreSQL for Search Service
   # ---------------------------
@@ -18,16 +17,31 @@ services:
       - search_postgres_data:/var/lib/postgresql/data
     restart: always
 
+  api-gateway:
+    image: nginx:latest
+    container_name: api-gateway
+    ports:
+      - "80:80"
+    volumes:
+      - ./services/gateway/entrypoint.sh:/entrypoint.sh:ro
+        #- ./gateway/entrypoint.sh:/entrypoint.sh:ro
+    depends_on:
+      - booking-node
+      - apartments-dotnet
+      - java-service
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    restart: always
+
   # ---------------------------
   # RabbitMQ (Message Broker)
   # ---------------------------
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    restart: always
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   container_name: rabbitmq
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   restart: always
 
   # ---------------------------
   # Booking Service (Node.js)
@@ -44,8 +58,8 @@ services:
     volumes:
       - ./services/BookingServer:/app:delegated
       - /app/node_modules
-    depends_on:
-      - rabbitmq
+    #depends_on:
+    # - rabbitmq
     restart: always
 
   # ---------------------------
