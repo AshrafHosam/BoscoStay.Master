@@ -51,7 +51,14 @@ services:
       - "5672:5672"
       - "15672:15672"
     logging:
-      driver: "none"      
+      driver: "none"
+    volumes:
+      - ./services/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+    environment:
+      RABBITMQ_DEFAULT_USER: bstayuser
+      RABBITMQ_DEFAULT_PASS: bstaypass
+      RABBITMQ_ALLOW_GUEST: true
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions \"/etc/rabbitmq/definitions.json\""
     restart: always
 
   # ---------------------------
