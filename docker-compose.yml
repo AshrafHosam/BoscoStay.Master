@@ -52,13 +52,6 @@ services:
       - "15672:15672"
     logging:
       driver: "none"
-    volumes:
-      - ./services/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
-    environment:
-      RABBITMQ_DEFAULT_USER: bstayuser
-      RABBITMQ_DEFAULT_PASS: bstaypass
-      RABBITMQ_ALLOW_GUEST: true
-      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions \"/etc/rabbitmq/definitions.json\""
     restart: always
 
   # ---------------------------
@@ -81,6 +74,7 @@ services:
       - /app/node_modules
     depends_on:
     - rabbitmq
+    - apartments-dotnet
     restart: always
 
   # ---------------------------
@@ -98,6 +92,7 @@ services:
       - "8082:8080"
     depends_on:
       - apartments-postgres
+      - rabbitmq
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     volumes:
@@ -121,7 +116,7 @@ services:
       driver: "none"
     depends_on:
       - search-postgres
-      - rabbitmq
+      - apartments-dotnet
     restart: always
 
 # ---------------------------
