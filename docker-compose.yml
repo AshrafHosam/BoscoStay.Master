@@ -40,6 +40,18 @@ services:
       - java-service
     entrypoint: ["/bin/sh", "/entrypoint.sh"]
     restart: always
+  
+  # ---------------------------
+  # MongoDB (Booking Service)
+  # ---------------------------
+  booking-mongo:
+    image: mongo:6
+    container_name: bstay-booking-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - booking_mongo_data:/data/db
+    restart: always
 
   # ---------------------------
   # RabbitMQ (Message Broker)
@@ -67,14 +79,17 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-    logging:
-      driver: "none"    
+      - MONGO_URI=mongodb://booking-mongo:27017/bstay_booking
+      - RABBITMQ_URL=amqp://rabbitmq:5672
     volumes:
       - ./services/BookingServer:/app:delegated
       - /app/node_modules
     depends_on:
-    - rabbitmq
-    - apartments-dotnet
+      - booking-mongo
+      - rabbitmq
+      - apartments-dotnet
+    #logging:
+      #driver: "none"
     restart: always
 
   # ---------------------------
@@ -125,6 +140,7 @@ services:
 volumes:
   search_postgres_data:
   apartments_postgres_data:
+  booking_mongo_data:
 
 # ---------------------------
 # Network
