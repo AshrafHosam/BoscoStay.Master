@@ -8,7 +8,7 @@ http {
         listen 80;
 
         location /booking/ {
-            proxy_pass http://booking-node:3000;
+            proxy_pass http://booking-node:3000/;
         }
 
         location /apartments/ {
@@ -16,7 +16,7 @@ http {
         }
 
         location /search/ {
-            proxy_pass http://java-service:8080;
+            proxy_pass http://java-service:8080/;
         }
     }
 }
