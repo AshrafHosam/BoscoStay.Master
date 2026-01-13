@@ -85,6 +85,33 @@ function availabilityCheck(apartmentId, label, checkIn, checkOut) {
         });
     });
 }
+function categorizedCheck(label) {
+    return __awaiter(this, void 0, void 0, function () {
+        var res, first;
+        var _a, _b;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0: return [4 /*yield*/, withRetry(function () {
+                        return axios_1.default.get("".concat(BASE_URL, "/apartments/Apartments/CategorizedApartments"), {
+                            headers: { accept: "text/plain" }
+                        });
+                    }, label)];
+                case 1:
+                    res = _c.sent();
+                    console.log("".concat(label, " status:"), res.status);
+                    first = (_b = (_a = res.data) === null || _a === void 0 ? void 0 : _a.categorizedApartments) === null || _b === void 0 ? void 0 : _b[0];
+                    if (first) {
+                        console.log("".concat(label, " \u2192 Apartment ID: ").concat(first.apartmentId));
+                        console.log("ai generated category is: ".concat(first.category));
+                    }
+                    else {
+                        console.log("".concat(label, " \u2192 No categorized apartments returned"));
+                    }
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
 function main() {
     return __awaiter(this, void 0, void 0, function () {
         var addRes, apartmentId_1, searchRes, retrySearch, bookingRes, bookingId_1, retryBooking, err_2;
@@ -92,17 +119,17 @@ function main() {
         return __generator(this, function (_g) {
             switch (_g.label) {
                 case 0:
-                    _g.trys.push([0, 31, , 32]);
+                    _g.trys.push([0, 35, , 36]);
                     return [4 /*yield*/, withRetry(function () {
                             return axios_1.default.post("".concat(BASE_URL, "/apartments/Apartments"), {
                                 name: "Palermo's Finest",
                                 address: "bolzano, via palermo 23",
-                                description: "string",
-                                floor: 0,
-                                noiseLevel: 0,
-                                distanceToCenterInKm: 0,
+                                description: "apartment in a quiet area close to the city center",
+                                floor: 1,
+                                noiseLevel: 1,
+                                distanceToCenterInKm: 5,
                                 isVisible: true,
-                                areaInSquareMeters: 0,
+                                areaInSquareMeters: 30,
                                 isFurnished: true,
                                 pricePerDay: 100
                             }, {
@@ -144,30 +171,46 @@ function main() {
                     return [4 /*yield*/, delay(1000)];
                 case 7:
                     _g.sent();
+                    // Categorized apartments check after creation
+                    return [4 /*yield*/, categorizedCheck("Categorized apartments after creation")];
+                case 8:
+                    // Categorized apartments check after creation
+                    _g.sent();
+                    return [4 /*yield*/, delay(1000)];
+                case 9:
+                    _g.sent();
                     // 3. Update apartment
                     return [4 /*yield*/, withRetry(function () {
                             return axios_1.default.put("".concat(BASE_URL, "/apartments/Apartments"), {
                                 id: apartmentId_1,
-                                name: "Palermo's Finest Updated",
+                                name: "Palermo's Finest",
                                 address: "bolzano, via palermo 23",
-                                description: "updated description",
+                                description: "premium apartment in a quiet area close to the city center",
                                 floor: 1,
-                                noiseLevel: 2,
-                                distanceToCenterInKm: 1,
+                                noiseLevel: 1,
+                                distanceToCenterInKm: 5,
                                 isVisible: true,
-                                areaInSquareMeters: 50,
-                                isFurnished: false,
-                                pricePerDay: 120
+                                areaInSquareMeters: 30,
+                                isFurnished: true,
+                                pricePerDay: 250
                             }, {
                                 headers: { "Content-Type": "application/json", "accept": "text/plain" }
                             });
                         }, "Update apartment")];
-                case 8:
+                case 10:
                     // 3. Update apartment
                     _g.sent();
                     console.log("Apartment updated");
                     return [4 /*yield*/, delay(1000)];
-                case 9:
+                case 11:
+                    _g.sent();
+                    // Categorized apartments check after update
+                    return [4 /*yield*/, categorizedCheck("Categorized apartments after update")];
+                case 12:
+                    // Categorized apartments check after update
+                    _g.sent();
+                    return [4 /*yield*/, delay(1000)];
+                case 13:
                     _g.sent();
                     return [4 /*yield*/, withRetry(function () {
                             return axios_1.default.post("".concat(BASE_URL, "/booking/bookings"), {
@@ -178,14 +221,14 @@ function main() {
                                 headers: { "Content-Type": "application/json", "accept": "text/plain" }
                             });
                         }, "Create booking")];
-                case 10:
+                case 14:
                     bookingRes = _g.sent();
                     console.log("Booking created:", bookingRes.status);
                     bookingId_1 = (_d = (_c = bookingRes.data) === null || _c === void 0 ? void 0 : _c.booking) === null || _d === void 0 ? void 0 : _d._id;
-                    if (!!bookingId_1) return [3 /*break*/, 13];
+                    if (!!bookingId_1) return [3 /*break*/, 17];
                     console.warn("No bookingId returned, retrying booking creation...");
                     return [4 /*yield*/, delay(1000)];
-                case 11:
+                case 15:
                     _g.sent();
                     return [4 /*yield*/, axios_1.default.post("".concat(BASE_URL, "/booking/bookings"), {
                             apartmentId: apartmentId_1,
@@ -194,24 +237,24 @@ function main() {
                         }, {
                             headers: { "Content-Type": "application/json", "accept": "text/plain" }
                         })];
-                case 12:
+                case 16:
                     retryBooking = _g.sent();
                     bookingId_1 = (_f = (_e = retryBooking.data) === null || _e === void 0 ? void 0 : _e.booking) === null || _f === void 0 ? void 0 : _f._id;
-                    _g.label = 13;
-                case 13:
+                    _g.label = 17;
+                case 17:
                     if (!bookingId_1)
                         throw new Error("BookingId not found after retry");
                     console.log("Booking ID:", bookingId_1);
                     return [4 /*yield*/, delay(1000)];
-                case 14:
+                case 18:
                     _g.sent();
                     // 4b. Availability check after booking (10–11 should be unavailable)
                     return [4 /*yield*/, availabilityCheck(apartmentId_1, "Availability after booking", "2026-01-10", "2026-01-11")];
-                case 15:
+                case 19:
                     // 4b. Availability check after booking (10–11 should be unavailable)
                     _g.sent();
                     return [4 /*yield*/, delay(1000)];
-                case 16:
+                case 20:
                     _g.sent();
                     // 5. Update booking (to Jan 13–15)
                     return [4 /*yield*/, withRetry(function () {
@@ -222,27 +265,23 @@ function main() {
                                 headers: { "Content-Type": "application/json", "accept": "text/plain" }
                             });
                         }, "Update booking")];
-                case 17:
+                case 21:
                     // 5. Update booking (to Jan 13–15)
                     _g.sent();
                     console.log("Booking updated");
                     return [4 /*yield*/, delay(1000)];
-                case 18:
+                case 22:
                     _g.sent();
                     // 5b. Availability check after booking update
-                    // Old window (10–11) should now be available
                     return [4 /*yield*/, availabilityCheck(apartmentId_1, "Availability after booking update (old window)", "2026-01-10", "2026-01-11")];
-                case 19:
+                case 23:
                     // 5b. Availability check after booking update
-                    // Old window (10–11) should now be available
                     _g.sent();
-                    // New window (13–15) should be unavailable
                     return [4 /*yield*/, availabilityCheck(apartmentId_1, "Availability after booking update (new window)", "2026-01-13", "2026-01-15")];
-                case 20:
-                    // New window (13–15) should be unavailable
+                case 24:
                     _g.sent();
                     return [4 /*yield*/, delay(1000)];
-                case 21:
+                case 25:
                     _g.sent();
                     // 6. Delete booking
                     return [4 /*yield*/, withRetry(function () {
@@ -250,23 +289,23 @@ function main() {
                                 headers: { "Content-Type": "application/json", "accept": "text/plain" }
                             });
                         }, "Delete booking")];
-                case 22:
+                case 26:
                     // 6. Delete booking
                     _g.sent();
                     console.log("Booking deleted");
                     return [4 /*yield*/, delay(1000)];
-                case 23:
+                case 27:
                     _g.sent();
                     // 6b. Availability check after booking deletion (both windows should be available again)
                     return [4 /*yield*/, availabilityCheck(apartmentId_1, "Availability after booking deletion (old window)", "2026-01-10", "2026-01-11")];
-                case 24:
+                case 28:
                     // 6b. Availability check after booking deletion (both windows should be available again)
                     _g.sent();
                     return [4 /*yield*/, availabilityCheck(apartmentId_1, "Availability after booking deletion (new window)", "2026-01-13", "2026-01-15")];
-                case 25:
+                case 29:
                     _g.sent();
                     return [4 /*yield*/, delay(1000)];
-                case 26:
+                case 30:
                     _g.sent();
                     // 7. Delete apartment
                     return [4 /*yield*/, withRetry(function () {
@@ -275,27 +314,27 @@ function main() {
                                 headers: { "Content-Type": "application/json", "accept": "text/plain" }
                             });
                         }, "Delete apartment")];
-                case 27:
+                case 31:
                     // 7. Delete apartment
                     _g.sent();
                     console.log("Apartment deleted");
                     return [4 /*yield*/, delay(1000)];
-                case 28:
+                case 32:
                     _g.sent();
                     // 8. Final availability search (apartment should be gone permanently)
                     return [4 /*yield*/, availabilityCheck(apartmentId_1, "Final availability search", "2026-01-10", "2026-01-11")];
-                case 29:
+                case 33:
                     // 8. Final availability search (apartment should be gone permanently)
                     _g.sent();
                     return [4 /*yield*/, availabilityCheck(apartmentId_1, "Final availability search (new window)", "2026-01-13", "2026-01-15")];
-                case 30:
+                case 34:
                     _g.sent();
-                    return [3 /*break*/, 32];
-                case 31:
+                    return [3 /*break*/, 36];
+                case 35:
                     err_2 = _g.sent();
                     console.error("Error in flow:", err_2.message);
-                    return [3 /*break*/, 32];
-                case 32: return [2 /*return*/];
+                    return [3 /*break*/, 36];
+                case 36: return [2 /*return*/];
             }
         });
     });

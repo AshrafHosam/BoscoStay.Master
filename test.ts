@@ -29,6 +29,22 @@ async function availabilityCheck(apartmentId: string, label: string, checkIn: st
   return !!found;
 }
 
+async function categorizedCheck(label: string) {
+  const res = await withRetry(() =>
+    axios.get(`${BASE_URL}/apartments/Apartments/CategorizedApartments`, {
+      headers: { accept: "text/plain" }
+    }), label);
+  console.log(`${label} status:`, res.status);
+
+  const first = res.data?.categorizedApartments?.[0];
+  if (first) {
+    console.log(`${label} → Apartment ID: ${first.apartmentId}`);
+    console.log(`ai generated category is: ${first.category}`);
+  } else {
+    console.log(`${label} → No categorized apartments returned`);
+  }
+}
+
 async function main() {
   try {
     // 1. Add apartment
@@ -36,12 +52,12 @@ async function main() {
       axios.post(`${BASE_URL}/apartments/Apartments`, {
         name: "Palermo's Finest",
         address: "bolzano, via palermo 23",
-        description: "string",
-        floor: 0,
-        noiseLevel: 0,
-        distanceToCenterInKm: 0,
+        description: "apartment in a quiet area close to the city center",
+        floor: 1,
+        noiseLevel: 1,
+        distanceToCenterInKm: 5,
         isVisible: true,
-        areaInSquareMeters: 0,
+        areaInSquareMeters: 30,
         isFurnished: true,
         pricePerDay: 100
       }, {
@@ -71,24 +87,32 @@ async function main() {
     console.log("Apartment ID:", apartmentId);
     await delay(1000);
 
+        // Categorized apartments check after creation
+    await categorizedCheck("Categorized apartments after creation");
+    await delay(1000);
+
     // 3. Update apartment
     await withRetry(() =>
       axios.put(`${BASE_URL}/apartments/Apartments`, {
         id: apartmentId,
-        name: "Palermo's Finest Updated",
+        name: "Palermo's Finest",
         address: "bolzano, via palermo 23",
-        description: "updated description",
+        description: "premium apartment in a quiet area close to the city center",
         floor: 1,
-        noiseLevel: 2,
-        distanceToCenterInKm: 1,
+        noiseLevel: 1,
+        distanceToCenterInKm: 5,
         isVisible: true,
-        areaInSquareMeters: 50,
-        isFurnished: false,
-        pricePerDay: 120
+        areaInSquareMeters: 30,
+        isFurnished: true,
+        pricePerDay: 250
       }, {
         headers: { "Content-Type": "application/json", "accept": "text/plain" }
       }), "Update apartment");
     console.log("Apartment updated");
+    await delay(1000);
+
+    // Categorized apartments check after update
+    await categorizedCheck("Categorized apartments after update");
     await delay(1000);
 
     // 4. Create booking (Jan 10–11)
@@ -135,9 +159,7 @@ async function main() {
     await delay(1000);
 
     // 5b. Availability check after booking update
-    // Old window (10–11) should now be available
     await availabilityCheck(apartmentId, "Availability after booking update (old window)", "2026-01-10", "2026-01-11");
-    // New window (13–15) should be unavailable
     await availabilityCheck(apartmentId, "Availability after booking update (new window)", "2026-01-13", "2026-01-15");
     await delay(1000);
 
